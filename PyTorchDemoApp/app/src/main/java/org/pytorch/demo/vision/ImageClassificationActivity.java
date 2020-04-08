@@ -151,6 +151,9 @@ public class ImageClassificationActivity extends AbstractCameraXActivity<ImageCl
     return getModuleAssetName();
   }
 
+  /*
+  * Function responsible for classification
+  * */
   @Override
   @WorkerThread
   @Nullable
@@ -160,11 +163,13 @@ public class ImageClassificationActivity extends AbstractCameraXActivity<ImageCl
     }
 
     try {
+      // If model is not loaded, load it and alloc memory for input tensor and tensor buffer
       if (mModule == null) {
         final String moduleFileAbsoluteFilePath = new File(
             Utils.assetFilePath(this, getModuleAssetName())).getAbsolutePath();
         mModule = Module.load(moduleFileAbsoluteFilePath);
 
+        // memory alloc
         mInputTensorBuffer =
             Tensor.allocateFloatBuffer(3 * INPUT_TENSOR_WIDTH * INPUT_TENSOR_HEIGHT);
         mInputTensor = Tensor.fromBlob(mInputTensorBuffer, new long[]{1, 3, INPUT_TENSOR_HEIGHT, INPUT_TENSOR_WIDTH});
