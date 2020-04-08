@@ -3,6 +3,7 @@ package org.pytorch.helloworld;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.ImageView;
@@ -29,14 +30,17 @@ public class MainActivity extends AppCompatActivity {
     setContentView(R.layout.activity_main);
 
     Bitmap bitmap = null;
+    Bitmap bitmap_orig = null;
     Module module = null;
     try {
       // creating bitmap from packaged into app android asset 'image.jpg',
       // app/src/main/assets/image.jpg
-      bitmap = BitmapFactory.decodeStream(getAssets().open("image.jpg"));
+      bitmap_orig = BitmapFactory.decodeStream(getAssets().open("ch08_20191007130015_1.JPG"));
+      bitmap = getResizedBitmap(bitmap_orig, 400, 400);
       // loading serialized torchscript module from packaged into app android asset model.pt,
       // app/src/model/assets/model.pt
-      module = Module.load(assetFilePath(this, "model.pt"));
+      module = Module.load(assetFilePath(this, "cctv_model.pt"));
+      // module = Module.load(assetFilePath(this, "model.pt"));
     } catch (IOException e) {
       Log.e("PytorchHelloWorld", "Error reading assets", e);
       finish();
@@ -95,5 +99,18 @@ public class MainActivity extends AppCompatActivity {
       }
       return file.getAbsolutePath();
     }
+  }
+
+  // resizes bitmap to given dimensions
+  public Bitmap getResizedBitmap(Bitmap bm, int newWidth, int newHeight) {
+    int width = bm.getWidth();
+    int height = bm.getHeight();
+    float scaleWidth = ((float) newWidth) / width;
+    float scaleHeight = ((float) newHeight) / height;
+    Matrix matrix = new Matrix();
+    matrix.postScale(scaleWidth, scaleHeight);
+    Bitmap resizedBitmap = Bitmap.createBitmap(
+            bm, 0, 0, width, height, matrix, false);
+    return resizedBitmap;
   }
 }

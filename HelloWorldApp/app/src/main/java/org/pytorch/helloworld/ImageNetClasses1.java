@@ -1,13 +1,6 @@
-package org.pytorch.demo;
+package org.pytorch.helloworld;
 
-public class Constants {
-  public static final String TAG = "PyTorchDemo";
-
-  public static String[] DISTRACTION_CLASSES = new String[]{
-          "Working",
-          "Distracted"
-  };
-
+public class ImageNetClasses1 {
   public static String[] IMAGENET_CLASSES = new String[]{
       "tench, Tinca tinca",
       "goldfish, Carassius auratus",

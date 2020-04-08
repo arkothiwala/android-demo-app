@@ -35,7 +35,7 @@ public class ImageClassificationActivity extends AbstractCameraXActivity<ImageCl
 
   private static final int INPUT_TENSOR_WIDTH = 224;
   private static final int INPUT_TENSOR_HEIGHT = 224;
-  private static final int TOP_K = 3;
+  private static final int TOP_K = 2;
   private static final int MOVING_AVG_PERIOD = 10;
   private static final String FORMAT_MS = "%dms";
   private static final String FORMAT_AVG_MS = "avg:%.0fms";
@@ -93,7 +93,7 @@ public class ImageClassificationActivity extends AbstractCameraXActivity<ImageCl
 
     mResultRowViews[0] = findViewById(R.id.image_classification_top1_result_row);
     mResultRowViews[1] = findViewById(R.id.image_classification_top2_result_row);
-    mResultRowViews[2] = findViewById(R.id.image_classification_top3_result_row);
+    //mResultRowViews[2] = findViewById(R.id.image_classification_top3_result_row);
 
     mFpsText = findViewById(R.id.image_classification_fps_text);
     mMsText = findViewById(R.id.image_classification_ms_text);
@@ -189,7 +189,7 @@ public class ImageClassificationActivity extends AbstractCameraXActivity<ImageCl
       final float[] topKScores = new float[TOP_K];
       for (int i = 0; i < TOP_K; i++) {
         final int ix = ixs[i];
-        topKClassNames[i] = Constants.IMAGENET_CLASSES[ix];
+        topKClassNames[i] = Constants.DISTRACTION_CLASSES[ix];
         topKScores[i] = scores[ix];
       }
       final long analysisDuration = SystemClock.elapsedRealtime() - startTime;
