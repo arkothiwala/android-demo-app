@@ -19,8 +19,13 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.reflect.Array;
+import java.util.Arrays;
+import java.util.stream.DoubleStream;
+import java.util.stream.IntStream;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.res.TypedArrayUtils;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -32,14 +37,22 @@ public class MainActivity extends AppCompatActivity {
     Bitmap bitmap = null;
     Bitmap bitmap_orig = null;
     Module module = null;
+    int[] target_shape;
     try {
       // creating bitmap from packaged into app android asset 'image.jpg',
       // app/src/main/assets/image.jpg
-      bitmap_orig = BitmapFactory.decodeStream(getAssets().open("ch08_20191007130015_1.JPG"));
-      bitmap = getResizedBitmap(bitmap_orig, 400, 400);
-      // loading serialized torchscript module from packaged into app android asset model.pt,
+      bitmap_orig = BitmapFactory.decodeStream(getAssets().open("ch08_20191007120955_25.JPG"));
+      //bitmap = getResizedBitmap(bitmap_orig, 224, 224);
+
+     target_shape = getResizeTarget(bitmap_orig, 224, 224);
+     int target_height = target_shape[0];
+     int target_width = target_shape[1];
+     bitmap = getResizedBitmap(bitmap_orig,  target_width, target_height);
+     bitmap = cropBitMap(bitmap, 224, 224);
+
+      // loading serialized torch script module from packaged into app android asset model.pt,
       // app/src/model/assets/model.pt
-      module = Module.load(assetFilePath(this, "cctv_model.pt"));
+      module = Module.load(assetFilePath(this, "ResNet34_15Apr2am.pt"));
       // module = Module.load(assetFilePath(this, "model.pt"));
     } catch (IOException e) {
       Log.e("PytorchHelloWorld", "Error reading assets", e);
@@ -58,8 +71,10 @@ public class MainActivity extends AppCompatActivity {
     final Tensor outputTensor = module.forward(IValue.from(inputTensor)).toTensor();
 
     // getting tensor content as java array of floats
-    final float[] scores = outputTensor.getDataAsFloatArray();
-
+    float[] scores = outputTensor.getDataAsFloatArray();
+    printArray(scores);
+    scores = softmax(scores);
+    printArray(scores);
     // searching for the index with maximum score
     float maxScore = -Float.MAX_VALUE;
     int maxScoreIdx = -1;
@@ -102,6 +117,16 @@ public class MainActivity extends AppCompatActivity {
   }
 
   // resizes bitmap to given dimensions
+
+  public int[] getResizeTarget(Bitmap bm, int resizeHeight, int resizeWidth){
+    float ratio, orig_height, orig_width;
+    orig_height = bm.getHeight();
+    orig_width = bm.getWidth();
+    ratio = Math.min(orig_height/resizeHeight , orig_width/resizeWidth);
+    int[] result = {Math.round(orig_height/ratio), Math.round(orig_width/ratio)};
+    return result;
+  }
+
   public Bitmap getResizedBitmap(Bitmap bm, int newWidth, int newHeight) {
     int width = bm.getWidth();
     int height = bm.getHeight();
@@ -112,5 +137,43 @@ public class MainActivity extends AppCompatActivity {
     Bitmap resizedBitmap = Bitmap.createBitmap(
             bm, 0, 0, width, height, matrix, false);
     return resizedBitmap;
+  }
+
+  public Bitmap cropBitMap(Bitmap bm, int newWidth, int newHeight){
+    int height = bm.getHeight();
+    int width = bm.getWidth();
+    int startRow = (int) Math.round((height-newHeight)*0.5);
+    int startCol = (int) Math.round((width-newWidth)*0.5);
+    Matrix matrix = new Matrix();
+    Bitmap croppedBitmap = Bitmap.createBitmap(
+            bm, startCol, startRow, newWidth, newHeight, matrix, false);
+    return croppedBitmap;
+  }
+
+  public float[] softmax(float[] scores){
+    float[] exp_scores = new float[scores.length];
+    float[] result = new float[scores.length];
+    float sum = 0;
+    // Convert to exponential and computing the sum
+    for(int i=0; i<scores.length; i++){
+      exp_scores[i] = (float) Math.exp(scores[i]);
+      sum = sum + exp_scores[i];
+    }
+    // divide exp scores with sum to get result
+    for(int i=0; i<scores.length; i++){
+      result[i] = exp_scores[i]/sum;
+    }
+    return result;
+  }
+  void printArray(float[] arr){
+    for(int i=0; i<arr.length; i++){
+      if(i == arr.length - 1){
+        System.out.println(arr[i]);
+      }
+      else{
+        System.out.print(arr[i]);
+        System.out.print(" , ");
+      }
+    }
   }
 }
