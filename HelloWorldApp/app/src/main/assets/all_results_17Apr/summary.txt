@@ -1,0 +1,8 @@
+Distraction Detection counts:
+
+TRAINING SET:
+Non_distracted (Cam 12) = 14 / 2335 (99.5% accuracy on training)
+Distracted (Cam 12) = 108 / 108 (100% accuracy on training data)
+
+TEST DATA
+Distracted (Cam 8) = 154 / 187 (82% accuracy on test data)
